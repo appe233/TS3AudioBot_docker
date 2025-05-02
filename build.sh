@@ -1,10 +1,16 @@
  #!/bin/bash
- docker build -f Dockerfile \
-    --build-arg "TS3_AUDIOBOT_RELEASE=0.12.0" \
-    --build-arg TS3_AUDIOBOT_FLAVOUR=TS3AudioBot_dotnetcore3.1.zip \
-    -t ancieque/ts3audiobot:0.12.0 \
-    -t ancieque/ts3audiobot:latest \
-    .
 
-docker push ancieque/ts3audiobot:0.12.0
-docker push ancieque/ts3audiobot:latest
+wget https://github.com/ZHANGTIANYAO1/TS3AudioBot-NetEaseCloudmusic-plugin/releases/download/3.0.2/TS3AudioBot_linux_x64.zip
+wget https://github.com/ZHANGTIANYAO1/TS3AudioBot-NetEaseCloudmusic-plugin/releases/download/3.0.2/TS3AudioBot_linux_arm64.zip
+unzip ./TS3AudioBot_linux_x64.zip && mv ./TS3AudioBot ./TS3AudioBot-amd64
+unzip ./TS3AudioBot_linux_arm64.zip && mv ./TS3AudioBot ./TS3AudioBot-arm64
+
+docker buildx build \
+   --platform linux/amd64,linux/arm64 \
+   --push \
+   -f Dockerfile \
+   -t appe233/ts3audiobot-netease:3.0.2 \
+   -t appe233/ts3audiobot-netease:latest \
+   .
+
+rm -f ./TS3AudioBot*

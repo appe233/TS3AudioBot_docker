@@ -1,41 +1,18 @@
-FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-alpine
+FROM ubuntu:20.04
 
-# which version and flavour of the audiobot to use
-ARG TS3_AUDIOBOT_RELEASE="0.12.0"
-ARG TS3_AUDIOBOT_FLAVOUR="TS3AudioBot_dotnetcore3.1.zip"
+ARG TARGETARCH
 
-# user id
-ARG PUID=9999
-ENV USER ts3bot
+COPY app "./TS3AudioBot-${TARGETARCH}" /app/
 
-# install all pre-requisites, these will be needed always
-RUN apk add \
-    opus-dev \
-    youtube-dl \
-    ffmpeg
+RUN mkdir -p /root/.net/TS3AudioBot/zpi4t3kq.4x5/data/plugins \
+    && mv /app/YunSettings.yml /root/.net/TS3AudioBot/zpi4t3kq.4x5/data/plugins/YunSettings.yml \
+    && mv /app/TS3AudioBot-* /app/TS3AudioBot \
+    && chmod u+x /app/TS3AudioBot \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends libopus-dev ffmpeg \
+    && apt-get autoclean \
+    && rm -rf /var/lib/apt/lists/* 
 
-# download and install the TS3AudioBot in the specified version and flavour
-RUN mkdir -p /app \
-    && cd /app \
-    && echo "downloading https://github.com/Splamy/TS3AudioBot/releases/download/${TS3_AUDIOBOT_RELEASE}/${TS3_AUDIOBOT_FLAVOUR}" \
-    && wget https://github.com/Splamy/TS3AudioBot/releases/download/${TS3_AUDIOBOT_RELEASE}/${TS3_AUDIOBOT_FLAVOUR} -O TS3AudioBot.zip \
-    && unzip TS3AudioBot.zip \
-    && rm TS3AudioBot.zip
+WORKDIR /app
 
-# add user to run under
-RUN adduser --disabled-password -u "${PUID}" "${USER}"
-
-# make data directory and chown it to the ts3bot user
-RUN mkdir -p /app/data
-RUN chown -R "${USER}" /app/data
-
-# set user to ts3bot, we dont want to be root from now on
-USER "${USER}"
-
-# set the work dir to data, so users can properly mount their config files to this dir with -v /host/path/to/data:/data
-WORKDIR /app/data
-
-# expose the webserver port
-EXPOSE 58913
-
-CMD ["dotnet", "/app/TS3AudioBot.dll", "--non-interactive"]
+CMD ["/app/TS3AudioBot", "--non-interactive"]
