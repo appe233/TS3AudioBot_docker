@@ -1,18 +1,19 @@
-FROM ubuntu:20.04
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine
 
+ARG TS3_AMD64_URL="https://github.com/Splamy/TS3AudioBot/releases/download/0.12.0/TS3AudioBot_linux_x64.tar.gz"
+ARG TS3_ARM64_URL="https://github.com/Splamy/TS3AudioBot/releases/download/0.12.0/TS3AudioBot_linux_arm64.tar.gz"
 ARG TARGETARCH
 
-COPY app "./TS3AudioBot-${TARGETARCH}" /app/
+COPY app /app/
 
-RUN mkdir -p /root/.net/TS3AudioBot/zpi4t3kq.4x5/data/plugins \
-    && mv /app/YunSettings.yml /root/.net/TS3AudioBot/zpi4t3kq.4x5/data/plugins/YunSettings.yml \
-    && mv /app/TS3AudioBot-* /app/TS3AudioBot \
-    && chmod u+x /app/TS3AudioBot \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends libopus-dev ffmpeg \
-    && apt-get autoclean \
-    && rm -rf /var/lib/apt/lists/* 
+RUN cd /app \
+    && if [ "$TARGETARCH" = "arm64" ]; then wget $TS3_ARM64_URL -O TS3AudioBot.tar.gz; else wget $TS3_AMD64_URL -O TS3AudioBot.tar.gz; fi \
+    && tar -xzf TS3AudioBot.tar.gz \
+    && rm -rf TS3AudioBot.tar.gz WebInterface/ \
+    && chown -R root:root /app \
+    && apk add opus-dev ffmpeg
 
+# set the work dir to data, so users can properly mount their config files to this dir with -v /host/path/to/data:/data
 WORKDIR /app
 
-CMD ["/app/TS3AudioBot", "--non-interactive"]
+CMD ["dotnet", "TS3AudioBot.dll"]

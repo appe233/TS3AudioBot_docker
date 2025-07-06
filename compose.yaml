@@ -1,0 +1,22 @@
+services:
+  ts3bot:
+    image: appe233/ts3audiobot:0.12.0
+    container_name: ts3audiobot
+    networks:
+      - ts3audiobot
+    depends_on:
+      - musicapi
+    volumes:
+      - type: bind
+        source: ./app/bots/default/bot.toml
+        target: /app/bots/default/bot.toml
+
+  musicapi:
+    image: binaryify/netease_cloud_music_api:latest
+    container_name: netease-cloud-music-api
+    networks:
+      - ts3audiobot
+
+networks:
+  ts3audiobot:
+    name: ts3audiobot

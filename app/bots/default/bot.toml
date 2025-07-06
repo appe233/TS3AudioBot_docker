@@ -20,13 +20,14 @@ channel = ""
 #The client badges. You can set a comma separated string with max three GUID's. Here is a list: http://yat.qa/ressourcen/abzeichen-badges/
 badges = ""
 #Client nickname when connecting.
-name = "音乐机器人（测试版）"
+name = "MusicBotTest"
 
 [connect.identity]
 #||| DO NOT MAKE THIS KEY PUBLIC ||| The client identity. You can import a teamspeak3 identity here too.
 key = ""
 #The client identity offset determining the security level.
 offset = 3
+
 
 [reconnect]
 
